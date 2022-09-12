@@ -1,5 +1,8 @@
 *.csproj
 *.sln
+*.suo
+*.v1
+*.v2
 bin/
 obj/
 .vs/
