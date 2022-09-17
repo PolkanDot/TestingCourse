@@ -5,6 +5,7 @@
 *.v2
 bin/
 obj/
+Properties/
 .vs/
 /Lab_1/TriangleClassificationProject/Новый текстовый документ.txt
 # Created by http://www.gitignore.io
@@ -211,3 +212,4 @@ $RECYCLE.BIN/
 *.msi
 *.msm
 *.msp
+/Lab_1/TriangleClassificationProject/Properties
