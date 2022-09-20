@@ -14,6 +14,7 @@
         {
             ParsingResult result = new ParsingResult();
             result.side = new double[args.Length];
+            result.sucsess = true;
             for (int i = 0; i < args.Length; i++)
             {
                 try
@@ -52,7 +53,7 @@
             return resultMessage;
         }
 
-        public string Op(string[] args)
+        public string Start(string[] args)
         {
             // Output messages inatialisation
             string unknownError = "Неизвестная ошибка";
@@ -69,19 +70,23 @@
                 {
                     resultMessage = notATriangle;
                 }
-                if ((parsingResult.side[0] > (parsingResult.side[1] + parsingResult.side[2])) &&
-                    (parsingResult.side[1] > (parsingResult.side[0] + parsingResult.side[2])) && 
-                    (parsingResult.side[2] > (parsingResult.side[1] + parsingResult.side[0])))
+                if ((parsingResult.side[0] < (parsingResult.side[1] + parsingResult.side[2])) &&
+                    (parsingResult.side[1] < (parsingResult.side[0] + parsingResult.side[2])) && 
+                    (parsingResult.side[2] < (parsingResult.side[1] + parsingResult.side[0])))
                 {
                     resultMessage = TypeDetermining(parsingResult.side);
+                }
+                else
+                {
+                    resultMessage = notATriangle;
                 }
             }
             return resultMessage;
         }
         static void Main(string[] args)
         {
-            MainProgram haha = new MainProgram();
-            Console.WriteLine(haha.Op(args));
+            MainProgram triangle = new MainProgram();
+            Console.WriteLine(triangle.Start(args));
         }
 
     }
