@@ -19,14 +19,18 @@ namespace MyProcessSample
             using StreamWriter sw = new("result.txt");
 
             string? inputArgs;
+            string argsString;
+            string expectedResult;
             while ((inputArgs = sr.ReadLine()) != null)
             {
+                argsString = inputArgs.Substring(0, (inputArgs.IndexOf(':')));
+                expectedResult = inputArgs.Substring(inputArgs.IndexOf(':') + 2);
                 try
                 {
                     var startInfo = new ProcessStartInfo
                     {
                         FileName = @"C:\Study\Testing\Lab_1\TriangleClassificationProject\bin\Debug\net6.0\triangle.exe",
-                        Arguments = "1 2 3",
+                        Arguments = argsString,
                         UseShellExecute = false,
                         RedirectStandardOutput = true,
                         CreateNoWindow = true
@@ -35,7 +39,7 @@ namespace MyProcessSample
                     string? result = proc.StandardOutput.ReadLine();
                     proc.WaitForExit();
 
-                    string outputRes = (testCase.result == result) ? "success" : "error";
+                    string outputRes = (expectedResult == result) ? "success" : "error";
                     sw.WriteLine(outputRes);
                 }
                 catch (Exception e)
