@@ -64,7 +64,7 @@ namespace ConsoleApplication
             string isoscelesTriangle = "Равнобедренный";
             string equilateralTriangle = "Равносторонний";
             string resultMessage = usualTriangle;
-                if ((side[0].Equals(side[1])) && (side[0].Equals(side[2])) && (side[1].Equals(side[2])))
+                if ((side[0].Equals(side[1])) && (side[0].Equals(side[2])))
                 {
                     resultMessage = equilateralTriangle;
                 }
@@ -95,7 +95,9 @@ namespace ConsoleApplication
             // Uncorrect convertation
             if (parsingResult.success)            
             {
-                if ((parsingResult.side.Length != 3) || (parsingResult.side[0] <= 0) || (parsingResult.side[1] <= 0) || (parsingResult.side[2] <= 0))
+                if ((parsingResult.side.Length != 3) 
+                    || (parsingResult.side[0] < 0) || (parsingResult.side[1] < 0) || (parsingResult.side[2] < 0)
+                    || (parsingResult.side[0].Equals(0)) || (parsingResult.side[1].Equals(0)) || (parsingResult.side[2].Equals(0)))
                 {
                     resultMessage = notATriangle;
                 }
