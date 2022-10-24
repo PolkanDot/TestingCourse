@@ -3,6 +3,7 @@
 *.suo
 *.v1
 *.v2
+*.txt
 bin/
 obj/
 Properties/
