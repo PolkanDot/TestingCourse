@@ -48,11 +48,17 @@ void CheckAllLinks(string href, List<string> uniqueHref)
     foreach (HtmlNode node in htmlNodes.ToList())
     {
         href = node.Attributes["href"].Value;
+        // если абсолютная ссылка
+        if (href.IndexOf(domen) == 0)
+        {
+            href = href.Substring(domen.Length);
+        }
         // если внешняя ссылка
-        if (href.Contains(':'))
+        else if (href.Contains(':'))
         {
             continue;
         }
+        // если относительная ссылка
         else if (href.Length > 2)
         {
             if (href[0] == '#')
@@ -61,8 +67,13 @@ void CheckAllLinks(string href, List<string> uniqueHref)
             }
             if (href[0] == '.')
             {
-                
+
                 href = href.Substring(3);
+            }
+            if (href[0] == '/')
+            {
+
+                href = href.Substring(1);
             }
             if (!uniqueHref.Contains(href))
             {
@@ -87,7 +98,7 @@ string url = "";
 
 foreach (string link in uniqueHref)
 {
-    url = domen + link;
+    url = domen + link;   
     LinkStatus(url, validLinks, invalidLinks, ref countValidLinks, ref countInvalidLinks);
 }
 
