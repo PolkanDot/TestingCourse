@@ -1,96 +1,97 @@
-﻿using System.Net;
-using HtmlAgilityPack;
+﻿using HtmlAgilityPack;
+using System.Net;
 
-void SortingLinks(StreamWriter validOut, StreamWriter invalidOut, ref List<string> allLinks)
+// http://links.qatl.ru/
+// https://www.unisender.com/
+string domen = @"https://www.unisender.com/";
+
+void LinkStatus(string url, StreamWriter validLinks, StreamWriter invalidLinks, ref int countValidLinks, ref int countInvalidLinks)
 {
-    int statusCode, validLinksCount = 0, invalidLinksCount = 0;
-    foreach (string link in allLinks)
+    try
     {
-        try
+        HttpWebRequest request = HttpWebRequest.Create(url) as HttpWebRequest;
+        request.Method = "HEAD";
+        HttpWebResponse response = request.GetResponse() as HttpWebResponse;
+        validLinks.Write($"{url} ");
+        validLinks.WriteLine((int)response.StatusCode);
+        countValidLinks++;
+    }
+    catch (WebException ex)
+    {
+        int code = (int)((HttpWebResponse)ex.Response).StatusCode;
+        if (code < 400)
         {
-            HttpWebRequest request = (HttpWebRequest)WebRequest.Create(link);
-            request.Method = WebRequestMethods.Http.Head;
-            request.Accept = @"*/*";
-            HttpWebResponse response = (HttpWebResponse)request.GetResponse();
-            statusCode = (int)response.StatusCode;
-            response.Close();
-        }
-        catch (WebException ex)
-        {
-            if (ex.Response == null)
-                throw;
-            statusCode = (int)((HttpWebResponse)ex.Response).StatusCode;
-        }
-        if (statusCode > 399)
-        {
-            invalidOut.WriteLine(link + " " + statusCode.ToString());
-            invalidLinksCount++;
+            validLinks.Write($"{url} ");
+            validLinks.WriteLine(code);
+            countValidLinks++;
         }
         else
         {
-            validOut.WriteLine(link + " " + statusCode.ToString());
-            validLinksCount++;
+            invalidLinks.Write($"{url} ");
+            invalidLinks.WriteLine(code);
+            countInvalidLinks++;
         }
     }
-    invalidOut.WriteLine();
-    validOut.WriteLine();
-    invalidOut.WriteLine(invalidLinksCount.ToString());
-    invalidOut.WriteLine(DateTime.Now);
-    validOut.WriteLine(validLinksCount.ToString());
-    validOut.WriteLine(DateTime.Now);
 }
 
-void SearchingLinks(ref HtmlWeb hap, string baseLink, ref List<string> allLinks, ref string baseDomen)
+void CheckAllLinks(string href, List<string> uniqueHref)
 {
-    Uri uriAddress;
-    var document = hap.Load(baseLink);
-    var nodes = document.DocumentNode.SelectNodes("//a");
-    string baseLincCopy = baseLink;
-    string baseDomenCopy = baseDomen;
-    if (nodes != null)
+    string url = "";
+    url = domen + href;
+    HtmlWeb web = new HtmlWeb();
+    var htmlDoc = web.Load(url);
+    var htmlNodes = htmlDoc.DocumentNode.SelectNodes("//a[@href]");
+    if (htmlNodes == null)
     {
-        foreach (HtmlNode node in nodes)
+        return;
+    }
+    foreach (HtmlNode node in htmlNodes.ToList())
+    {
+        href = node.Attributes["href"].Value;
+        // если внешняя ссылка
+        if (href.Contains(':'))
         {
-            string currentLink = node.GetAttributeValue("href", null);
-            if ((currentLink != null) &&
-                (!allLinks.Exists(element => ((element == currentLink) || (element == baseDomenCopy + currentLink)))))
+            continue;
+        }
+        else if (href.Length > 2)
+        {
+            if (href[0] == '#')
             {
-                if (currentLink.IndexOf(baseDomen) == 0)
-                {
-                    allLinks.Insert(allLinks.IndexOf(baseLink) + 1, currentLink);
-                    Console.WriteLine(currentLink);
-                }
-                else if (!(currentLink.Contains(":")) && (Uri.TryCreate(currentLink, UriKind.Relative, out uriAddress)))
-                {
-                    allLinks.Insert(allLinks.IndexOf(baseLink) + 1, baseDomen + currentLink);
-                    Console.WriteLine(baseDomen + currentLink);
-                }
+                continue;
+            }
+            if (href[0] == '.')
+            {
+                
+                href = href.Substring(3);
+            }
+            if (!uniqueHref.Contains(href))
+            {
+                uniqueHref.Add(href);
+                CheckAllLinks(href, uniqueHref);
             }
         }
     }
-    int nextLinkIndex = allLinks.IndexOf(baseLink) + 1;
-    if (allLinks.Count > nextLinkIndex)
-    {
-        SearchingLinks(ref hap, allLinks[nextLinkIndex], ref allLinks, ref baseDomen);
-    }
-
 }
-Console.WriteLine("Type path to the file:");
-string domen = Console.ReadLine();
-HtmlWeb web = new HtmlWeb();
-List<string> links = new List<string>();
-using StreamWriter swValid = new ("../../../validLinks.txt");
-using StreamWriter swInvalid = new ("../../../invalidLinks.txt");
 
-try
+
+
+string emptyLink = "";
+List<string> uniqueHref = new List<string>();
+using StreamWriter validLinks = new("../../../validLinks.txt");
+using StreamWriter invalidLinks = new("../../../invalidLinks.txt");
+
+int countValidLinks = 0, countInvalidLinks = 0;
+LinkStatus(domen, validLinks, invalidLinks, ref countValidLinks, ref countInvalidLinks);
+CheckAllLinks(emptyLink, uniqueHref);
+string url = "";
+
+foreach (string link in uniqueHref)
 {
-    SearchingLinks(ref web, domen, ref links, ref domen);
-    SortingLinks(swValid, swInvalid, ref links);
-}
-catch (Exception ex)
-{
-    Console.WriteLine(ex.Message);
+    url = domen + link;
+    LinkStatus(url, validLinks, invalidLinks, ref countValidLinks, ref countInvalidLinks);
 }
 
-swValid.Close();
-swInvalid.Close();
+validLinks.WriteLine($"Quantity: {countValidLinks}");
+validLinks.WriteLine(DateTime.Now);
+invalidLinks.WriteLine($"Quantity: {countInvalidLinks}");
+invalidLinks.WriteLine(DateTime.Now);
