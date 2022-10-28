@@ -3,6 +3,7 @@ using System.Net;
 
 // http://links.qatl.ru/
 // https://www.unisender.com/
+// https://www.travelline.ru/
 
 void SortingLinks(ref List<string> allUniqueHref, ref string baseDomen, StreamWriter validLinksStream, StreamWriter invalidLinksStream, ref int countValidLinks, ref int countInvalidLinks)
 {
@@ -21,26 +22,35 @@ void SortingLinks(ref List<string> allUniqueHref, ref string baseDomen, StreamWr
         }
         catch (WebException ex)
         {
-            int code = (int)((HttpWebResponse)ex.Response).StatusCode;
-            if (code < 400)
+            if (ex.Response == null)
             {
-                validLinksStream.Write($"{url} ");
-                validLinksStream.WriteLine(code);
-                countValidLinks++;
+                invalidLinksStream.Write($"{url} ");
+                invalidLinksStream.WriteLine("Program did not wait for a response from the server");
             }
             else
             {
-                invalidLinksStream.Write($"{url} ");
-                invalidLinksStream.WriteLine(code);
-                countInvalidLinks++;
+                int code = (int)((HttpWebResponse)ex.Response).StatusCode;
+                if (code < 400)
+                {
+                    validLinksStream.Write($"{url} ");
+                    validLinksStream.WriteLine(code);
+                    countValidLinks++;
+                }
+                else
+                {
+                    invalidLinksStream.Write($"{url} ");
+                    invalidLinksStream.WriteLine(code);
+                    countInvalidLinks++;
+                }
             }
+            
         }
     }
     validLinksStream.WriteLine();
     invalidLinksStream.WriteLine();
-    validLinksStream.WriteLine($"Quantity: {countValidLinks}");
+    validLinksStream.WriteLine($"Total: {countValidLinks}");
     validLinksStream.WriteLine(DateTime.Now);
-    invalidLinksStream.WriteLine($"Quantity: {countInvalidLinks}");
+    invalidLinksStream.WriteLine($"Total: {countInvalidLinks}");
     invalidLinksStream.WriteLine(DateTime.Now);
 }
 
@@ -64,7 +74,7 @@ void SearchingLinks(string href, ref List<string> allUniqueHref, ref string base
             href = href.Substring(baseDomen.Length);
         }
         // если внешняя ссылка
-        else if (href.Contains(':'))
+        else if ((href.Contains(':')) || (href.IndexOf("//") == 0))
         {
             continue;
         }
@@ -82,8 +92,11 @@ void SearchingLinks(string href, ref List<string> allUniqueHref, ref string base
             }
             if (href[0] == '/')
             {
-
                 href = href.Substring(1);
+            }
+            if (href.IndexOf("//") == 0)
+            {
+                href = href.Substring(2);
             }
             if (!allUniqueHref.Contains(href))
             {
@@ -109,4 +122,5 @@ using StreamWriter invalidLinksStream = new("../../../invalidLinks.txt");
 
 int countValidLinks = 0, countInvalidLinks = 0;
 SearchingLinks(emptyLink, ref allUniqueHref, ref domen);
-SortingLinks(ref allUniqueHref, ref domen, validLinksStream, invalidLinksStream, ref countValidLinks, ref countInvalidLinks);
+SortingLinks(ref allUniqueHref, ref domen, validLinksStream, invalidLinksStream, ref countValidLinks, ref countInvalidLinks); 
+Console.WriteLine("Yahuuuuuu");
