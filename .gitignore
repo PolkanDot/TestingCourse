@@ -5,6 +5,8 @@
 *.v2
 *.txt
 bin/
+tools/
+.config/
 obj/
 Properties/
 .vs/
