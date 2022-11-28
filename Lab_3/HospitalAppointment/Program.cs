@@ -1,112 +1,165 @@
-﻿static void Main() { }
-public enum ReceptionHours { eight, nine, ten, eleven, twelve, fourteen, fifteen, sixteen, seventeen}
-    public enum Doctors {dentist, surgeon, urologist, neurologist, otolaryngologist, psychiatrist, pediatrician, ophthalmologist, gynecologist};
-    public interface IAppointment
+﻿public enum ReceptionHours { eight, nine, ten, eleven, twelve, fourteen, fifteen, sixteen, seventeen}
+public enum Doctors {dentist, surgeon, urologist, neurologist, otolaryngologist, psychiatrist, pediatrician, ophthalmologist, gynecologist};
+public struct ListAppointmentsOutput
+{
+    public bool searchResult;
+    public List<IAppointment> appointments;
+}
+public struct ListTimesOutput
+{
+    public bool searchResult;
+    public List<ReceptionHours> times;
+}
+public interface IAppointment
+{
+    public string GetName();
+    public DateTime GetDate();
+    public ReceptionHours GetTime();
+    public Doctors GetDoctor();
+}  
+public class Equeue   
+{   
+    static void Main()
     {
-        public string GetName();
-        public DateTime GetDate();
-        public ReceptionHours GetTime();
-        public Doctors GetDoctor();
+        Console.WriteLine("Hey");
     }
-    public class Equeue
+    public bool AddAppointment(IAppointment client)
     {
-        public bool AddAppointment(IAppointment client)
+        bool result = true;
+        IAppointment? found = this.allAppointments.Find(item => ((item.GetDate == client.GetDate)
+                                                                & (item.GetTime == client.GetTime)
+                                                                & (item.GetDoctor == client.GetDoctor)));
+        if (found == null)
         {
-            bool result = true;
-            foreach (IAppointment appointment in this.allAppointments)
-            {
-                if ((appointment.GetDate == client.GetDate)
-                   &(appointment.GetTime == client.GetTime)
-                   &(appointment.GetDoctor == client.GetDoctor))
-                {
-                    result = false;
-                    break;
-                }
-            }
-            if (result)
-            {
-                this.allAppointments.Add(client);
-                this.allAppointmentsCount++;
-            }
-            return result;
+            this.allAppointments.Add(client);
+            this.allAppointmentsCount++;
         }
-
-        public bool DeleteAppointment(IAppointment client)
+        else
         {
-            return (this.allAppointments.Remove(client));
+            result = false;
         }
-        public List<IAppointment> GetAppointmentsByName(string clientName)
+        return result;
+    }
+    public bool DeleteAppointment(IAppointment client)
+    {
+        bool result = this.allAppointments.Remove(client);
+        if (result)
         {
-            List<IAppointment> currentNameAppointments = new List<IAppointment>();
-            string currentName;
-            foreach (IAppointment appointment in this.allAppointments)
-            {
-                currentName = appointment.GetName();
-                if (currentName == clientName)
-                {
-                    currentNameAppointments.Add(appointment);
-                }
-                // возможна сортировка
-            }
-            return currentNameAppointments;
+            allAppointmentsCount--;
         }
-        public List<IAppointment> GetAppointmentsByDoctorAndDate(Doctors doctor, DateTime requiredDate)
+        return result;
+    }
+    public ListAppointmentsOutput GetAppointmentsByName(string clientName)
+    {
+        List<IAppointment> currentNameAppointments = new List<IAppointment>();
+        string currentName;
+        foreach (IAppointment appointment in this.allAppointments)
         {
-            List<IAppointment> currentDoctorAndDateAppointments = new List<IAppointment>();
-            Doctors currentDoctor;
-            DateTime currentDate;
-            foreach (IAppointment appointment in this.allAppointments)
+            currentName = appointment.GetName();
+            if (currentName == clientName)
             {
-                currentDoctor = appointment.GetDoctor();
-                currentDate = appointment.GetDate();
-                if ((currentDoctor == doctor) && (currentDate == requiredDate))
-                {
-                    currentDoctorAndDateAppointments.Add(appointment);
-                }
-                // возможна сортировка
+                currentNameAppointments.Add(appointment);
             }
-            return currentDoctorAndDateAppointments;
         }
-        public List<IAppointment> GetAppointmentsByDate(DateTime requiredDate)
+        ListAppointmentsOutput result = new ListAppointmentsOutput();
+        result.appointments = currentNameAppointments;
+        if (currentNameAppointments.Count > 0)
         {
-            List<IAppointment> currentDateAppointments = new List<IAppointment>();
-            DateTime currentDate;
-            foreach (IAppointment appointment in this.allAppointments)
-            {
-                currentDate = appointment.GetDate();
-                if (currentDate == requiredDate)
-                {
-                    currentDateAppointments.Add(appointment);
-                }
-                // возможна сортировка
-            }
-            return currentDateAppointments;
+            result.searchResult = true;
         }
-        public List<ReceptionHours> GetFreeTimesByDoctorAndDate(Doctors doctor, DateTime requiredDate)
+        else
         {
-            List<IAppointment> currentDateAppointments = GetAppointmentsByDoctorAndDate(doctor, requiredDate);
-            List<ReceptionHours> freeTimes = new List<ReceptionHours>();
-            ReceptionHours workTime;
-            for (workTime = ReceptionHours.eight; workTime <= ReceptionHours.seventeen; workTime++)
+            result.searchResult = false;
+        }
+        return result;
+    }
+    public ListAppointmentsOutput GetAppointmentsByDoctorAndDate(Doctors doctor, DateTime requiredDate)
+    {
+        List<IAppointment> currentDoctorAndDateAppointments = new List<IAppointment>();
+        Doctors currentDoctor;
+        DateTime currentDate;
+        foreach (IAppointment appointment in this.allAppointments)
+        {
+            currentDoctor = appointment.GetDoctor();
+            currentDate = appointment.GetDate();
+            if ((currentDoctor == doctor) && (currentDate == requiredDate))
             {
-                freeTimes.Add(workTime);
+                currentDoctorAndDateAppointments.Add(appointment);
             }
-            foreach (IAppointment appointment in currentDateAppointments)
+        }
+        ListAppointmentsOutput result = new ListAppointmentsOutput();
+        result.appointments = currentDoctorAndDateAppointments;
+        if (currentDoctorAndDateAppointments.Count > 0)
+        {
+            result.searchResult = true;
+        }
+        else
+        {
+            result.searchResult = false;
+        }
+        return result;
+    }
+    public ListAppointmentsOutput GetAppointmentsByDate(DateTime requiredDate)
+    {
+        List<IAppointment> currentDateAppointments = new List<IAppointment>();
+        DateTime currentDate;
+        foreach (IAppointment appointment in this.allAppointments)
+        {
+            currentDate = appointment.GetDate();
+            if (currentDate == requiredDate)
+            {
+                currentDateAppointments.Add(appointment);
+            }
+        }
+        ListAppointmentsOutput result = new ListAppointmentsOutput();
+        result.appointments = currentDateAppointments;
+        if (currentDateAppointments.Count > 0)
+        {
+            result.searchResult = true;
+        }
+        else
+        {
+            result.searchResult = false;
+        }
+        return result;
+    }
+    public ListTimesOutput GetFreeTimesByDoctorAndDate(Doctors doctor, DateTime requiredDate)
+    {
+        List<IAppointment> currentDateAppointments = GetAppointmentsByDoctorAndDate(doctor, requiredDate).appointments;
+        List<ReceptionHours> freeTimes = new List<ReceptionHours>();
+        ReceptionHours workTime;
+        Doctors currentDoctor;
+        DateTime currentDate;
+        for (workTime = ReceptionHours.eight; workTime <= ReceptionHours.seventeen; workTime++)
+        {
+            freeTimes.Add(workTime);
+        }
+        foreach (IAppointment appointment in currentDateAppointments)
+        {
+            currentDoctor = appointment.GetDoctor();
+            currentDate = appointment.GetDate();
+            if ((currentDoctor == doctor) && (currentDate == requiredDate))
             {
                 workTime = appointment.GetTime();
                 if (freeTimes.Contains(workTime))
                 {
                     freeTimes.Remove(workTime);
                 }
-                // возможна сортировка
-            }
-            return freeTimes;
+            }       
         }
-    void Main()
-    {
-        Console.WriteLine("Hey");
+        ListTimesOutput result = new ListTimesOutput();
+        result.times = freeTimes;
+        if (currentDateAppointments.Count > 0)
+        {
+            result.searchResult = true;
+        }
+        else
+        {
+            result.searchResult = false;
+        }
+        return result;
     }
-
     private List<IAppointment> allAppointments = new List<IAppointment>();
-        private int allAppointmentsCount = 0;
-    }
+    private int allAppointmentsCount = 0;
+}
+
