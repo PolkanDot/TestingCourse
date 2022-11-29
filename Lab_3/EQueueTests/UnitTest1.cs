@@ -182,7 +182,7 @@ namespace UnitTests
             Assert.True(success & !resultNameAppointments.searchResult); // ѕроверка того, что записть удалена из списка
         }
         [Fact]
-        public void successful_deleting_tree_exist_appointments() // ”спешное удаление нескольких записей
+        public void successful_deleting_three_exist_appointments() // ”спешное удаление нескольких записей
         {
             // Arrange
             DateTime date = DateTime.Today;
