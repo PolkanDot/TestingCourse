@@ -4,6 +4,8 @@
 *.v1
 *.v2
 *.txt
+*.vcxproj
+*.filters
 bin/
 tools/
 .config/
