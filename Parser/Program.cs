@@ -1,15 +1,46 @@
-﻿Parser parser = new Parser();
+﻿// Нужно добавить невосприимчивость к большому кличеству пробелов
+// Думаю через sr.Peek() проверять если следующий символ пробел,
+// то читать его и перемещать курсор, если не пробел,
+// то продолжать проверку в соответствии с обрабатываемым "токеном"
+
+// Возможно при выводе сообщения об ошибке нам нужно еще писать строку и столбец
+
+// Если всю прогу можно написать в строку, то нужно много чего переделывать,
+// тк я много где ориентировался, что некоторые токены начинаются с новой строки
+
+Parser parser = new Parser();
 parser.Parsing();
 class Parser
 {
-    //<PROG>
-    static bool Prog(StreamReader sr)
+    public void Parsing()
+    {
+        Console.WriteLine("Укажите полный путь к проверяемому файлу с кодом:");
+        string? pathToInpFile = Console.ReadLine();
+        if (!File.Exists(pathToInpFile))
+        {
+            Console.WriteLine("Ошибка открытия файла");
+            return;
+        }
+        using StreamReader sr = new(pathToInpFile);
+        bool result = Prog(sr);
+
+        Console.WriteLine(result_message);
+    }
+
+    bool Prog(StreamReader sr)
     {
         bool result = false;
         string[] mas; 
         string lex = "";
+
         lex = sr.ReadLine();
+        if (lex == null)
+        {
+            result_message = "Ожидалось ключевое слово PROG";
+            return false;    
+        }
         mas = lex.Split(" ");
+
         if ((mas[0] == "PROG") & (mas.Length == 2))
         {
             if (Var(sr))
@@ -27,11 +58,70 @@ class Parser
                         else
                         {
                             result = false;
+                            result_message = "Ожидалось ключевое слово END";
                         }
                     }
                     else
                     {
                         result = false;
+                    }
+                }
+                else
+                {
+                    result = false;
+                    result_message = "Ожидалось ключевое слово BEGIN";
+                }
+            }
+            else
+            {
+                result = false;
+            }
+        }
+        else
+        {
+            result = false;
+            result_message = "Ожидалось ключевое слово PROG";
+        }
+        return result;
+    }
+
+    bool ListSt(StreamReader sr)
+    {
+        return true;
+    }
+
+    bool Var(StreamReader sr)
+    {
+        int readResult;
+        bool result = false;
+        string lex = "";
+        char workChar;
+        char[] workString = { };
+
+        readResult = sr.Read(workString, 0, 4);
+        if (readResult == 0)
+        {
+            result_message = "Ожидалось ключевое слово VAR";
+            result = false;
+        }
+
+        lex = string.Concat(workString);
+
+        if (lex == "VAR ")
+        {
+            if (IdList(sr))
+            {
+                //доделать проверку ":"
+                if (ListSt(sr))
+                {
+                    if (IdType(sr))
+                    {
+                        result = true;
+                    }
+                    else
+                    {
+                        result = false;
+                        result_message = "Ожидалось ключевое слово END";
                     }
                 }
                 else
@@ -47,47 +137,41 @@ class Parser
         else
         {
             result = false;
+            result_message = "Ожидалось ключевое слово VAR";
         }
-        return result;
-    }
 
-    //<ListSt>
-    static bool ListSt(StreamReader sr)
-    {
         return true;
     }
 
-    //<Var>
-    static bool Var(StreamReader sr)
+    bool IdType(StreamReader sr)
     {
-        return true;
-    }
+        bool result = false;
+        string lex = "";
 
-    //<IdList>
-    static bool IdList(StreamReader sr)
-    {
-        return true;
-    }
-
-    public void Parsing()
-    {
-        Console.WriteLine("Type path to the file:");
-        string? pathToInpFile = Console.ReadLine();
-        if (!File.Exists(pathToInpFile))
+        lex = sr.ReadLine();
+        if (lex == null)
         {
-            Console.WriteLine("Error open file.");
-            return;
+            result_message = "Ожидался тип объявленных параметров";
+            return false;
         }
-        using StreamReader sr = new(pathToInpFile);
-        bool result = Prog(sr);
 
-        if (result)
+        if ((lex == "int") &(lex == "float") & (lex == "bool") & (lex == "string"))
         {
-            Console.WriteLine("Program is correct");
+            result = true;
         }
         else
         {
-            Console.WriteLine("Program is not correct");
+            result = false;
+            result_message = "Неверно указан тип параметра";
         }
+
+        return result;
     }
+
+    bool IdList(StreamReader sr)
+    {
+        return true;
+    }
+
+    private string result_message = "Programm is correct";
 }
