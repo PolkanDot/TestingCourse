@@ -3,7 +3,7 @@
     class MyProcess
     {
         //<PROG>
-        bool Prog(StreamReader sr)
+        static bool Prog(StreamReader sr)
         {
             bool result = false;
             string[] mas; 
@@ -52,24 +52,24 @@
         }
 
         //<ListSt>
-        bool ListSt(StreamReader sr)
+        static bool ListSt(StreamReader sr)
         {
             return true;
         }
 
         //<Var>
-        bool Var(StreamReader sr)
+        static bool Var(StreamReader sr)
         {
             return true;
         }
 
         //<IdList>
-        bool IdList(StreamReader sr)
+        static bool IdList(StreamReader sr)
         {
             return true;
         }
         
-        public void Main()
+        public static void Main()
         {
             Console.WriteLine("Type path to the file:");
             string? pathToInpFile = Console.ReadLine();
