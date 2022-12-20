@@ -1,33 +1,28 @@
-﻿namespace MyProcessSample
+﻿Parser parser = new Parser();
+parser.Parsing();
+class Parser
 {
-    class MyProcess
+    //<PROG>
+    static bool Prog(StreamReader sr)
     {
-        //<PROG>
-        static bool Prog(StreamReader sr)
+        bool result = false;
+        string[] mas; 
+        string lex = "";
+        lex = sr.ReadLine();
+        mas = lex.Split(" ");
+        if ((mas[0] == "PROG") & (mas.Length == 2))
         {
-            bool result = false;
-            string[] mas; 
-            string lex = "";
-            lex = sr.ReadLine();
-            mas = lex.Split(" ");
-            if ((mas[0] == "PROG") & (mas.Length == 2))
+            if (Var(sr))
             {
-                if (Var(sr))
+                lex = sr.ReadLine();
+                if (lex == "BEGIN")
                 {
-                    lex = sr.ReadLine();
-                    if (lex == "BEGIN")
+                    if (ListSt(sr))
                     {
-                        if (ListSt(sr))
+                        lex = sr.ReadLine();
+                        if (lex == "END")
                         {
-                            lex = sr.ReadLine();
-                            if (lex == "END")
-                            {
-                                result = true;
-                            }
-                            else
-                            {
-                                result = false;
-                            }
+                            result = true;
                         }
                         else
                         {
@@ -48,47 +43,51 @@
             {
                 result = false;
             }
-            return result;
         }
-
-        //<ListSt>
-        static bool ListSt(StreamReader sr)
+        else
         {
-            return true;
+            result = false;
         }
+        return result;
+    }
 
-        //<Var>
-        static bool Var(StreamReader sr)
+    //<ListSt>
+    static bool ListSt(StreamReader sr)
+    {
+        return true;
+    }
+
+    //<Var>
+    static bool Var(StreamReader sr)
+    {
+        return true;
+    }
+
+    //<IdList>
+    static bool IdList(StreamReader sr)
+    {
+        return true;
+    }
+
+    public void Parsing()
+    {
+        Console.WriteLine("Type path to the file:");
+        string? pathToInpFile = Console.ReadLine();
+        if (!File.Exists(pathToInpFile))
         {
-            return true;
+            Console.WriteLine("Error open file.");
+            return;
         }
+        using StreamReader sr = new(pathToInpFile);
+        bool result = Prog(sr);
 
-        //<IdList>
-        static bool IdList(StreamReader sr)
+        if (result)
         {
-            return true;
+            Console.WriteLine("Program is correct");
         }
-        
-        public static void Main()
+        else
         {
-            Console.WriteLine("Type path to the file:");
-            string? pathToInpFile = Console.ReadLine();
-            if (!File.Exists(pathToInpFile))
-            {
-                Console.WriteLine("Error open file.");
-                return;
-            }
-            using StreamReader sr = new(pathToInpFile);
-            bool result = Prog(sr);
-
-            if (result)
-            {
-                Console.WriteLine("Program is correct");
-            }
-            else
-            {
-                Console.WriteLine("Program is not correct");
-            }
+            Console.WriteLine("Program is not correct");
         }
     }
 }
