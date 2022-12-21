@@ -12,7 +12,7 @@ Parser parser = new Parser();
 parser.Parsing();
 class Parser
 {
-    private void SpaceSkiper(StreamReader sr)
+    static void SpaceSkiper(StreamReader sr)
     {
         char space = (char)sr.Peek();
         while (space == ' ')
@@ -20,6 +20,23 @@ class Parser
             sr.Read();
             space = (char)sr.Peek();
         }
+    }
+
+    static string LongRead(StreamReader sr, int count)
+    {
+        int digit;
+        char workChar;
+        char[] workString = { };
+        string resultString = "";
+
+        for (digit = 0; digit < count; count++)
+        {
+            workChar = (char)sr.Read();
+            workString[digit] = workChar;
+        }
+        resultString = string.Concat(workString);
+
+        return resultString;
     }
     public void Parsing()
     {
@@ -41,14 +58,11 @@ class Parser
         bool result = false;
         string[] mas; 
         string lex = "";
+        char[] workString = { };
 
-        lex = sr.ReadLine();
-        if (lex == null)
-        {
-            result_message = "Ожидалось ключевое слово PROG";
-            return false;    
-        }
-        mas = lex.Split(" ");
+        SpaceSkiper(sr);
+
+        // добавить чтение через свой метод чтения
 
         if ((mas[0] == "PROG") & (mas.Length == 2))
         {
