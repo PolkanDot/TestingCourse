@@ -12,6 +12,15 @@ Parser parser = new Parser();
 parser.Parsing();
 class Parser
 {
+    private void SpaceSkiper(StreamReader sr)
+    {
+        char space = (char)sr.Peek();
+        while (space == ' ')
+        {
+            sr.Read();
+            space = (char)sr.Peek();
+        }
+    }
     public void Parsing()
     {
         Console.WriteLine("Укажите полный путь к проверяемому файлу с кодом:");
@@ -27,7 +36,7 @@ class Parser
         Console.WriteLine(result_message);
     }
 
-    bool Prog(StreamReader sr)
+    private bool Prog(StreamReader sr)
     {
         bool result = false;
         string[] mas; 
@@ -85,12 +94,12 @@ class Parser
         return result;
     }
 
-    bool ListSt(StreamReader sr)
+    private bool ListSt(StreamReader sr)
     {
         return true;
     }
 
-    bool Var(StreamReader sr)
+    private bool Var(StreamReader sr)
     {
         int readResult;
         bool result = false;
@@ -112,6 +121,7 @@ class Parser
             if (IdList(sr))
             {
                 //доделать проверку ":"
+                sr.Peek()
                 if (ListSt(sr))
                 {
                     if (IdType(sr))
@@ -143,7 +153,7 @@ class Parser
         return true;
     }
 
-    bool IdType(StreamReader sr)
+    private bool IdType(StreamReader sr)
     {
         bool result = false;
         string lex = "";
@@ -168,7 +178,7 @@ class Parser
         return result;
     }
 
-    bool IdList(StreamReader sr)
+    private bool IdList(StreamReader sr)
     {
         return true;
     }
