@@ -8,6 +8,8 @@
 // Если всю прогу можно написать в строку, то нужно много чего переделывать,
 // тк я много где ориентировался, что некоторые токены начинаются с новой строки
 
+// В idList на вход передаем символ конца списка
+
 Parser parser = new Parser();
 parser.Parsing();
 class Parser
@@ -22,19 +24,28 @@ class Parser
         }
     }
 
-    static string LongRead(StreamReader sr, int count)
+    static bool LongRead(StreamReader sr, int count, string resultString)
     {
-        int digit;
+        int digit = 0;
         char workChar;
         char[] workString = { };
-        string resultString = "";
+        bool result;
 
-        for (digit = 0; digit < count; count++)
+        while((digit < count) &(sr.Peek() != -1))
         {
             workChar = (char)sr.Read();
             workString[digit] = workChar;
+            digit++;
         }
-        resultString = string.Concat(workString);
+        if (digit == count)
+        {
+            resultString = string.Concat(workString);
+            result = true;
+        }
+        else
+        {
+            result = false;
+        }
 
         return resultString;
     }
@@ -122,7 +133,7 @@ class Parser
         char[] workString = { };
 
         readResult = sr.Read(workString, 0, 4);
-        if (readResult == 0)
+        if (readResult == -1)
         {
             result_message = "Ожидалось ключевое слово VAR";
             result = false;
