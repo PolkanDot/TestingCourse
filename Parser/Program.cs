@@ -227,9 +227,7 @@ class Parser
     private bool IdList(StreamReader sr, string ch)
     {
         int count = 2;
-        bool end = false;
         bool result = false;
-        string ch1 = "";
         SpaceSkiper(sr);
         IdListRecursive(sr, ch, ref count);
         if (count == 1)
@@ -291,8 +289,9 @@ class Parser
                 result_message = "Ожидалось ;";
                 return false;
             }
+            return false;
         }
-        result_message = "Ожидался оператор";
+        result_message = "Ожидался список идентификаторов";
         return false;
     }
     private bool Read(StreamReader sr)
@@ -311,8 +310,9 @@ class Parser
                 result_message = "Ожидалось ;";
                 return false;
             }
+            return false;
         }
-        result_message = "Ожидался оператор";
+        result_message = "Ожидался список идентификаторов";
         return false;
     }
     private bool Assign(StreamReader sr)
@@ -329,19 +329,19 @@ class Parser
                     {
                         return (potentialSign == ";");
                     }
-                    // если не смог прочитать по каким то причинам
+                    result_message = "Ожидалось ;";
                     return false;
                 }
+                return false;
             }
-            // нпрочитали не ":="
+            result_message = "Ожидалось :=";
             return false;
         }
-        // не удалось прочитать
+        result_message = "Ожидалось :=";
         return false;
     }
     private bool ST(StreamReader sr)
     {
-        int symbol;
         string potentialOperator = "";
         SpaceSkiper(sr);
         if (!LongRead(sr, 2, ref potentialOperator))
@@ -398,7 +398,7 @@ class Parser
             {
                 return true;
             }
-            // встретили слово начинающееся с e(E) но не end(END)
+            result_message = "Ожидалось ключевое слово end";
             return false;
         }
         if (ST(sr))
@@ -426,7 +426,7 @@ class Parser
                         {
                             return (symbol == ")");
                         }
-                        // не прочиталась скобка, хотя должна была
+                        result_message = "Ожидалось )";
                         return false;
                     }
                     return false;
@@ -467,7 +467,7 @@ class Parser
             {
                 return D(sr);
             }
-            // если некорректный множитель
+            result_message = "Некорректный множитель";
             return false;
         }
         return true;
@@ -493,7 +493,7 @@ class Parser
             {
                 return C(sr);
             }
-            // если некорректное слагаемое
+            result_message = "Некорректное слагаемое";
             return false;
         }
         return true;
