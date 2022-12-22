@@ -40,6 +40,7 @@ class Parser
         if (digit == count)
         {
             resultString = string.Concat(workString);
+            resultString = resultString.ToLower();
             result = true;
         }
         else
@@ -73,7 +74,7 @@ class Parser
 
         SpaceSkiper(sr);
 
-        if ((LongRead(sr, 5, ref lex)) & (lex == "PROG "))
+        if ((LongRead(sr, 5, ref lex)) & (lex == "prog "))
         {
             SpaceSkiper(sr);
             if ((LongRead(sr, 2, ref lex)) & (lex == "id"))
@@ -81,19 +82,19 @@ class Parser
                 if (Var(sr))
                 {
                     SpaceSkiper(sr);                   
-                    if ((LongRead(sr, 6, ref lex)) & (lex == "BEGIN "))
+                    if ((LongRead(sr, 6, ref lex)) & (lex == "prog "))
                     {
                         if (ListSt(sr))
                         {
                             SpaceSkiper(sr);
-                            if ((LongRead(sr, 3, ref lex)) & (lex == "END"))
+                            if ((LongRead(sr, 3, ref lex)) & (lex == "end"))
                             {
                                 result = true;
                             }
                             else
                             {
                                 result = false;
-                                result_message = "Ожидалось ключевое слово END";
+                                result_message = "Ожидалось ключевое слово end";
                             }
                         }
                         else
@@ -104,7 +105,7 @@ class Parser
                     else
                     {
                         result = false;
-                        result_message = "Ожидалось ключевое слово BEGIN";
+                        result_message = "Ожидалось ключевое слово begin";
                     }
                 }
                 else
@@ -121,7 +122,7 @@ class Parser
         else
         {
             result = false;
-            result_message = "Ожидалось ключевое слово PROG";
+            result_message = "Ожидалось ключевое слово prog";
         }
 
         return result;
@@ -137,12 +138,12 @@ class Parser
         int readResult;
         bool result = false;
         string lex = "";
-        char endChar = ':';
+        string endChar = ":";
         char[] workString = { };
 
         SpaceSkiper(sr);
 
-        if ((LongRead(sr, 4, ref lex)) & (lex == "VAR "))
+        if ((LongRead(sr, 4, ref lex)) & (lex == "var "))
         {
             if (IdList(sr, endChar))
             {
@@ -163,7 +164,7 @@ class Parser
         else
         {
             result = false;
-            result_message = "Ожидалось ключевое слово VAR";
+            result_message = "Ожидалось ключевое слово var";
         }
 
         return result;
@@ -238,57 +239,56 @@ class Parser
         return result;
     }
 
-    private bool IdList(StreamReader sr, char ch)
+    private bool IdList(StreamReader sr, string ch)
     {
-        char ch1 = (char)sr.Read();
-        bool bol = false;
-        bool bl = false;
-
-        while (bl == false)
+        int count = 2;
+        bool end = false;
+        bool result = false;
+        string ch1 = "";
+        SpaceSkiper(sr);
+        while (!end)
         {
-            while (bol == false)
+            if ((LongRead(sr, 1, ref ch1)) & (ch1 == "i"))
             {
-                if (ch1 == 'i')
+                if ((LongRead(sr, 1, ref ch1)) & (ch1 == "d"))
                 {
-                    ch1 = (char)sr.Read();
-                    if (ch1 == 'd')
+                    count -= 1;
+                    SpaceSkiper(sr);
+                    if ((LongRead(sr, 1, ref ch1)) & (ch1 == ","))
                     {
-                        ch1 = (char)sr.Read();
-                        while (ch1 == ' ')
-                        {
-                            ch1 = (char)sr.Read();
-                        }
-                        if (ch1 == ch)
-                        {
-                            bl = true;
-                        }
-                        if (ch1 != ',')
-                        {
-                            bol = true;
-                            bl = true;
-                        }
-
+                        SpaceSkiper(sr);
+                        count *= 2;
+                    }
+                    else if (ch1 == ch)
+                    {
+                        end = true;
+                    }
+                    else
+                    {
+                        end = true;
+                        result = false;
+                        result_message = $"Ожидался служебный символ {ch}";
                     }
                 }
-                if (ch1 == ' ')
+                else
                 {
-                    bol = true;
+                    end = true;
+                    result = false;
+                    result_message = "Ожидался идентификатор id";
                 }
             }
-            bol = false;
-            while (ch1 == ' ')
+            else
             {
-                ch1 = (char)sr.Read();
+                end = true;
+                result = false;
+                result_message = "Ожидался идентификатор id";
             }
-
         }
-        if (ch1 == ',')
+        if (count == 1)
         {
-            result_message = "Не встречена ',' между индетификаторами";
-            return false;
+            result = true;
         }
-        else
-            return true;
+        return result;
     }
 
     private string result_message = "Programm is correct";
