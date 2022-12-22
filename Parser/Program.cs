@@ -278,8 +278,8 @@ class Parser
     private bool Write(StreamReader sr)
     {
         string potentialOperator = "";
-        LongRead(sr, 2, ref potentialOperator);
-        if (potentialOperator == "e(")
+        LongRead(sr, 1, ref potentialOperator);
+        if (potentialOperator == "(")
         {
             if (IdList(sr, ")"))
             {
@@ -288,11 +288,11 @@ class Parser
                 {
                     return (potentialOperator == ";");
                 }
-                // если не смог прочитать по каким то причинам
+                result_message = "Ожидалось ;";
                 return false;
             }
         }
-        // если не 'write('
+        result_message = "Ожидался оператор";
         return false;
     }
     private bool Read(StreamReader sr)
@@ -308,28 +308,77 @@ class Parser
                 {
                     return (potentialOperator == ";");
                 }
-                // если не смог прочитать по каким то причинам
+                result_message = "Ожидалось ;";
                 return false;
             }
         }
-        // если не 'read('
+        result_message = "Ожидался оператор";
         return false;
     }
-
+    private bool Assign(StreamReader sr)
+    {
+        string potentialRavno = "", potentialSign = "";
+        if (LongRead(sr, 2, ref potentialRavno))
+        {
+            if (potentialRavno == ":=")
+            {
+                if (Exp(sr))
+                {
+                    SpaceSkiper(sr);
+                    if (LongRead(sr, 1, ref potentialSign))
+                    {
+                        return (potentialSign == ";");
+                    }
+                    // если не смог прочитать по каким то причинам
+                    return false;
+                }
+            }
+            // нпрочитали не ":="
+            return false;
+        }
+        // не удалось прочитать
+        return false;
+    }
     private bool ST(StreamReader sr)
     {
         int symbol;
         string potentialOperator = "";
         SpaceSkiper(sr);
-        LongRead(sr, 4, ref potentialOperator);
+        if (!LongRead(sr, 2, ref potentialOperator))
+        {
+            result_message = "Ожидался оператор";
+            return false;
+        }
         switch (potentialOperator)
         {
-            case ("writ"):
-                return Write(sr);
-            case ("read"):
-                return Read(sr);
-            
+            case ("wr"):
+                {
+                    if ((LongRead(sr, 3, ref potentialOperator)) & (potentialOperator == "ite"))
+                    {
+                        SpaceSkiper(sr);
+                        return Write(sr);
+                    }
+                    result_message = "Ожидался оператор";
+                    return false;
+                }
+            case ("re"):
+                {
+                    if ((LongRead(sr, 2, ref potentialOperator)) & (potentialOperator == "ad"))
+                    {
+                        SpaceSkiper(sr);
+                        return Read(sr);
+                    }
+                    result_message = "Ожидался оператор";
+                    return false;
+                }
+            case ("id"):
+                {
+                    SpaceSkiper(sr);
+                    return Assign(sr);
+                }
+
             default:
+                result_message = "Ожидался оператор";
                 return false;
         }
     }
@@ -357,6 +406,106 @@ class Parser
             return B(sr);
         }
         return false;
+    }
+
+    private bool F(StreamReader sr)
+    {
+        SpaceSkiper(sr);
+        string symbol = "";
+        if (LongRead(sr, 1, ref symbol))
+        {
+            switch (symbol)
+            {
+                case ("-"):
+                    return F(sr);
+                case ("("):
+                    if (Exp(sr))
+                    {
+                        SpaceSkiper(sr);
+                        if (LongRead(sr, 1, ref symbol))
+                        {
+                            return (symbol == ")");
+                        }
+                        // не прочиталась скобка, хотя должна была
+                        return false;
+                    }
+                    return false;
+                case ("i"):
+                    if (LongRead(sr, 1, ref symbol))
+                    {
+                        if (symbol == "d")
+                        {
+                            return true;
+                        }
+                        return false;
+                    }
+                    return false;
+                case ("n"):
+                    if (LongRead(sr, 2, ref symbol))
+                    {
+                        if (symbol == "um")
+                        {
+                            return true;
+                        }
+                        return false;
+                    }
+                    return false;
+            }
+        }
+        return true;
+    }
+    // <D> -> Empty | * <F> <D>  
+    private bool D(StreamReader sr)
+    {
+        int potentialMulty;
+        SpaceSkiper(sr);
+        potentialMulty = sr.Peek();
+        if ((char)potentialMulty == '*')
+        {
+            potentialMulty = sr.Read();
+            if (F(sr))
+            {
+                return D(sr);
+            }
+            // если некорректный множитель
+            return false;
+        }
+        return true;
+    }
+    private bool T(StreamReader sr)
+    {
+        if (!F(sr))
+        {
+            return false;
+        }
+        return D(sr);
+    }
+    // <C> -> Empty | + <T> <C>
+    private bool C(StreamReader sr)
+    {
+        int potentialPlus;
+        SpaceSkiper(sr);
+        potentialPlus = sr.Peek();
+        if ((char)potentialPlus == '+')
+        {
+            potentialPlus = sr.Read();
+            if (T(sr))
+            {
+                return C(sr);
+            }
+            // если некорректное слагаемое
+            return false;
+        }
+        return true;
+    }
+    // <EXP> -> <T> <C>
+    private bool Exp(StreamReader sr)
+    {
+        if (!T(sr))
+        {
+            return false;
+        }
+        return C(sr);
     }
     private bool ListSt(StreamReader sr)
     {
