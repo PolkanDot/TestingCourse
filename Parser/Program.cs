@@ -10,6 +10,8 @@
 
 // В idList на вход передаем символ конца списка
 
+using System.Linq.Expressions;
+
 Parser parser = new Parser();
 parser.Parsing();
 class Parser
@@ -31,7 +33,7 @@ class Parser
         char[] workString = { };
         bool result;
 
-        while((digit < count) &(sr.Peek() != -1))
+        while((digit < count) & (sr.Peek() != -1))
         {
             workChar = (char)sr.Read();
             workString[digit] = workChar;
@@ -191,21 +193,65 @@ class Parser
         bool result = false;
         string lex = "";
 
-        lex = sr.ReadLine();
-        if (lex == null)
+        SpaceSkiper(sr);
+        if (LongRead(sr, 1, lex))
         {
-            result_message = "Ожидался тип объявленных параметров";
-            return false;
-        }
-
-        if ((lex == "int") &(lex == "float") & (lex == "bool") & (lex == "string"))
-        {
-            result = true;
+            switch (lex)
+            {
+                case "i":
+                    if ((LongRead(sr, 2, lex)) & (lex == "nt"))
+                    {
+                        result = true;
+                    }
+                    else
+                    {
+                        result = false;
+                        result_message = "Неизвестный тип переменной";
+                    }
+                    break;
+                case "f":
+                    if ((LongRead(sr, 4, lex)) & (lex == "loat"))
+                    {
+                        result = true;
+                    }
+                    else
+                    {
+                        result = false;
+                        result_message = "Неизвестный тип переменной";
+                    }
+                    break;
+                case "b":
+                    if ((LongRead(sr, 3, lex)) & (lex == "ool"))
+                    {
+                        result = true;
+                    }
+                    else
+                    {
+                        result = false;
+                        result_message = "Неизвестный тип переменной";
+                    }
+                    break;
+                case "s":
+                    if ((LongRead(sr, 5, lex)) & (lex == "tring"))
+                    {
+                        result = true;
+                    }
+                    else
+                    {
+                        result = false;
+                        result_message = "Неизвестный тип переменной";
+                    }
+                    break;
+                default:
+                    result = false;
+                    result_message = "Ожидалcя тип объявленных переменных или тип указан неверно";
+                    break;
+            }
         }
         else
         {
             result = false;
-            result_message = "Неверно указан тип параметра";
+            result_message = "Ожидалcя тип объявленных переменных";
         }
 
         return result;
