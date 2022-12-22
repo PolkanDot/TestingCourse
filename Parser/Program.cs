@@ -47,7 +47,7 @@ class Parser
             result = false;
         }
 
-        return resultString;
+        return result;
     }
     public void Parsing()
     {
@@ -73,42 +73,49 @@ class Parser
 
         SpaceSkiper(sr);
 
-        // добавить чтение через свой метод чтения
-
-        if ((mas[0] == "PROG") & (mas.Length == 2))
+        if ((LongRead(sr, 5, lex)) & (lex == "PROG "))
         {
-            if (Var(sr))
+            SpaceSkiper(sr);
+            if ((LongRead(sr, 2, lex)) & (lex == "id"))
             {
-                lex = sr.ReadLine();
-                if (lex == "BEGIN")
+                if (Var(sr))
                 {
-                    if (ListSt(sr))
+                    SpaceSkiper(sr);                   
+                    if ((LongRead(sr, 6, lex)) & (lex == "BEGIN "))
                     {
-                        lex = sr.ReadLine();
-                        if (lex == "END")
+                        if (ListSt(sr))
                         {
-                            result = true;
+                            SpaceSkiper(sr);
+                            if ((LongRead(sr, 3, lex)) & (lex == "END"))
+                            {
+                                result = true;
+                            }
+                            else
+                            {
+                                result = false;
+                                result_message = "Ожидалось ключевое слово END";
+                            }
                         }
                         else
                         {
                             result = false;
-                            result_message = "Ожидалось ключевое слово END";
                         }
                     }
                     else
                     {
                         result = false;
+                        result_message = "Ожидалось ключевое слово BEGIN";
                     }
                 }
                 else
                 {
                     result = false;
-                    result_message = "Ожидалось ключевое слово BEGIN";
                 }
             }
             else
             {
                 result = false;
+                result_message = "Ожидалось название программы";
             }
         }
         else
@@ -116,6 +123,7 @@ class Parser
             result = false;
             result_message = "Ожидалось ключевое слово PROG";
         }
+
         return result;
     }
 
