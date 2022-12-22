@@ -74,7 +74,7 @@ class Parser
 
         SpaceSkiper(sr);
 
-        if ((LongRead(sr, 5, ref lex)) & (lex == "prog "))
+        if ((LongRead(sr, 4, ref lex)) & (lex == "prog"))
         {
             SpaceSkiper(sr);
             if ((LongRead(sr, 2, ref lex)) & (lex == "id"))
@@ -82,7 +82,7 @@ class Parser
                 if (Var(sr))
                 {
                     SpaceSkiper(sr);                   
-                    if ((LongRead(sr, 6, ref lex)) & (lex == "prog "))
+                    if ((LongRead(sr, 5, ref lex)) & (lex == "begin"))
                     {
                         if (ListSt(sr))
                         {
@@ -149,7 +149,16 @@ class Parser
             {
                 if (IdType(sr))
                 {
-                    result = true;
+                    SpaceSkiper(sr);
+                    if ((LongRead(sr, 1, ref lex)) & (lex == ";"))
+                    {
+                        result = true;
+                    }
+                    else
+                    {
+                        result = false;
+                        result_message = "Ожидалось ;";
+                    }
                 }
                 else
                 {
@@ -246,49 +255,48 @@ class Parser
         bool result = false;
         string ch1 = "";
         SpaceSkiper(sr);
-        while (!end)
-        {
-            if ((LongRead(sr, 1, ref ch1)) & (ch1 == "i"))
-            {
-                if ((LongRead(sr, 1, ref ch1)) & (ch1 == "d"))
-                {
-                    count -= 1;
-                    SpaceSkiper(sr);
-                    if ((LongRead(sr, 1, ref ch1)) & (ch1 == ","))
-                    {
-                        SpaceSkiper(sr);
-                        count *= 2;
-                    }
-                    else if (ch1 == ch)
-                    {
-                        end = true;
-                    }
-                    else
-                    {
-                        end = true;
-                        result = false;
-                        result_message = $"Ожидался служебный символ {ch}";
-                    }
-                }
-                else
-                {
-                    end = true;
-                    result = false;
-                    result_message = "Ожидался идентификатор id";
-                }
-            }
-            else
-            {
-                end = true;
-                result = false;
-                result_message = "Ожидался идентификатор id";
-            }
-        }
+        IdListRecursive(sr, ch, ref count);
         if (count == 1)
         {
             result = true;
         }
         return result;
+    }
+
+    private void IdListRecursive(StreamReader sr, string ch, ref int count)
+    {
+        string ch1 = "";
+        SpaceSkiper(sr);
+        if ((LongRead(sr, 1, ref ch1)) & (ch1 == "i"))
+        {
+            if ((LongRead(sr, 1, ref ch1)) & (ch1 == "d"))
+            {
+                count -= 1;
+                SpaceSkiper(sr);
+                if ((LongRead(sr, 1, ref ch1)) & (ch1 == ","))
+                {
+                    SpaceSkiper(sr);
+                    count *= 2;
+                    IdListRecursive(sr, ch, ref count);
+                }
+                else if (ch1 == ch)
+                {
+                }
+                else
+                {
+                    result_message = $"Ожидался служебный символ {ch}";
+                    count = 0;
+                }
+            }
+            else
+            {
+                result_message = "Ожидался идентификатор id";
+            }
+        }
+        else
+        {
+            result_message = "Ожидался идентификатор id";
+        }
     }
 
     private string result_message = "Programm is correct";
