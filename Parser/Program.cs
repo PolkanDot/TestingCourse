@@ -3,8 +3,6 @@
 // то читать его и перемещать курсор, если не пробел,
 // то продолжать проверку в соответствии с обрабатываемым "токеном"
 
-// Возможно при выводе сообщения об ошибке нам нужно еще писать строку и столбец
-
 // Если всю прогу можно написать в строку, то нужно много чего переделывать,
 // тк я много где ориентировался, что некоторые токены начинаются с новой строки
 
@@ -19,18 +17,18 @@ class Parser
     static void SpaceSkiper(StreamReader sr)
     {
         char space = (char)sr.Peek();
-        while (space == ' ')
+        while ((space == ' ') | (space == '\r') | (space == '\n'))
         {
             sr.Read();
             space = (char)sr.Peek();
         }
     }
 
-    static bool LongRead(StreamReader sr, int count, string resultString)
+    static bool LongRead(StreamReader sr, int count, ref string resultString)
     {
         int digit = 0;
         char workChar;
-        char[] workString = { };
+        char[] workString = new char[count];
         bool result;
 
         while((digit < count) & (sr.Peek() != -1))
@@ -75,20 +73,20 @@ class Parser
 
         SpaceSkiper(sr);
 
-        if ((LongRead(sr, 5, lex)) & (lex == "PROG "))
+        if ((LongRead(sr, 5, ref lex)) & (lex == "PROG "))
         {
             SpaceSkiper(sr);
-            if ((LongRead(sr, 2, lex)) & (lex == "id"))
+            if ((LongRead(sr, 2, ref lex)) & (lex == "id"))
             {
                 if (Var(sr))
                 {
                     SpaceSkiper(sr);                   
-                    if ((LongRead(sr, 6, lex)) & (lex == "BEGIN "))
+                    if ((LongRead(sr, 6, ref lex)) & (lex == "BEGIN "))
                     {
                         if (ListSt(sr))
                         {
                             SpaceSkiper(sr);
-                            if ((LongRead(sr, 3, lex)) & (lex == "END"))
+                            if ((LongRead(sr, 3, ref lex)) & (lex == "END"))
                             {
                                 result = true;
                             }
@@ -139,35 +137,18 @@ class Parser
         int readResult;
         bool result = false;
         string lex = "";
-        char workChar;
+        char endChar = ':';
         char[] workString = { };
 
-        readResult = sr.Read(workString, 0, 4);
-        if (readResult == -1)
-        {
-            result_message = "Ожидалось ключевое слово VAR";
-            result = false;
-        }
+        SpaceSkiper(sr);
 
-        lex = string.Concat(workString);
-
-        if (lex == "VAR ")
+        if ((LongRead(sr, 4, ref lex)) & (lex == "VAR "))
         {
-            if (IdList(sr))
+            if (IdList(sr, endChar))
             {
-                //доделать проверку ":"
-                sr.Peek()
-                if (ListSt(sr))
+                if (IdType(sr))
                 {
-                    if (IdType(sr))
-                    {
-                        result = true;
-                    }
-                    else
-                    {
-                        result = false;
-                        result_message = "Ожидалось ключевое слово END";
-                    }
+                    result = true;
                 }
                 else
                 {
@@ -185,7 +166,7 @@ class Parser
             result_message = "Ожидалось ключевое слово VAR";
         }
 
-        return true;
+        return result;
     }
 
     private bool IdType(StreamReader sr)
@@ -194,12 +175,12 @@ class Parser
         string lex = "";
 
         SpaceSkiper(sr);
-        if (LongRead(sr, 1, lex))
+        if (LongRead(sr, 1, ref lex))
         {
             switch (lex)
             {
                 case "i":
-                    if ((LongRead(sr, 2, lex)) & (lex == "nt"))
+                    if ((LongRead(sr, 2, ref lex)) & (lex == "nt"))
                     {
                         result = true;
                     }
@@ -210,7 +191,7 @@ class Parser
                     }
                     break;
                 case "f":
-                    if ((LongRead(sr, 4, lex)) & (lex == "loat"))
+                    if ((LongRead(sr, 4, ref lex)) & (lex == "loat"))
                     {
                         result = true;
                     }
@@ -221,7 +202,7 @@ class Parser
                     }
                     break;
                 case "b":
-                    if ((LongRead(sr, 3, lex)) & (lex == "ool"))
+                    if ((LongRead(sr, 3, ref lex)) & (lex == "ool"))
                     {
                         result = true;
                     }
@@ -232,7 +213,7 @@ class Parser
                     }
                     break;
                 case "s":
-                    if ((LongRead(sr, 5, lex)) & (lex == "tring"))
+                    if ((LongRead(sr, 5, ref lex)) & (lex == "tring"))
                     {
                         result = true;
                     }
@@ -257,9 +238,57 @@ class Parser
         return result;
     }
 
-    private bool IdList(StreamReader sr)
+    private bool IdList(StreamReader sr, char ch)
     {
-        return true;
+        char ch1 = (char)sr.Read();
+        bool bol = false;
+        bool bl = false;
+
+        while (bl == false)
+        {
+            while (bol == false)
+            {
+                if (ch1 == 'i')
+                {
+                    ch1 = (char)sr.Read();
+                    if (ch1 == 'd')
+                    {
+                        ch1 = (char)sr.Read();
+                        while (ch1 == ' ')
+                        {
+                            ch1 = (char)sr.Read();
+                        }
+                        if (ch1 == ch)
+                        {
+                            bl = true;
+                        }
+                        if (ch1 != ',')
+                        {
+                            bol = true;
+                            bl = true;
+                        }
+
+                    }
+                }
+                if (ch1 == ' ')
+                {
+                    bol = true;
+                }
+            }
+            bol = false;
+            while (ch1 == ' ')
+            {
+                ch1 = (char)sr.Read();
+            }
+
+        }
+        if (ch1 == ',')
+        {
+            result_message = "Не встречена ',' между индетификаторами";
+            return false;
+        }
+        else
+            return true;
     }
 
     private string result_message = "Programm is correct";
