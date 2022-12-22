@@ -1,14 +1,4 @@
-﻿// Нужно добавить невосприимчивость к большому кличеству пробелов
-// Думаю через sr.Peek() проверять если следующий символ пробел,
-// то читать его и перемещать курсор, если не пробел,
-// то продолжать проверку в соответствии с обрабатываемым "токеном"
-
-// Если всю прогу можно написать в строку, то нужно много чего переделывать,
-// тк я много где ориентировался, что некоторые токены начинаются с новой строки
-
-// В idList на вход передаем символ конца списка
-
-using System.Linq.Expressions;
+﻿using System.Linq.Expressions;
 
 Parser parser = new Parser();
 parser.Parsing();
@@ -86,16 +76,7 @@ class Parser
                     {
                         if (ListSt(sr))
                         {
-                            SpaceSkiper(sr);
-                            if ((LongRead(sr, 3, ref lex)) & (lex == "end"))
-                            {
-                                result = true;
-                            }
-                            else
-                            {
-                                result = false;
-                                result_message = "Ожидалось ключевое слово end";
-                            }
+                            result = true;
                         }
                         else
                         {
@@ -126,11 +107,6 @@ class Parser
         }
 
         return result;
-    }
-
-    private bool ListSt(StreamReader sr)
-    {
-        return true;
     }
 
     private bool Var(StreamReader sr)
@@ -297,6 +273,98 @@ class Parser
         {
             result_message = "Ожидался идентификатор id";
         }
+    }
+
+    private bool Write(StreamReader sr)
+    {
+        string potentialOperator = "";
+        LongRead(sr, 2, ref potentialOperator);
+        if (potentialOperator == "e(")
+        {
+            if (IdList(sr, ")"))
+            {
+                SpaceSkiper(sr);
+                if (LongRead(sr, 1, ref potentialOperator))
+                {
+                    return (potentialOperator == ";");
+                }
+                // если не смог прочитать по каким то причинам
+                return false;
+            }
+        }
+        // если не 'write('
+        return false;
+    }
+    private bool Read(StreamReader sr)
+    {
+        string potentialOperator = "";
+        LongRead(sr, 1, ref potentialOperator);
+        if (potentialOperator == "(")
+        {
+            if (IdList(sr, ")"))
+            {
+                SpaceSkiper(sr);
+                if (LongRead(sr, 1, ref potentialOperator))
+                {
+                    return (potentialOperator == ";");
+                }
+                // если не смог прочитать по каким то причинам
+                return false;
+            }
+        }
+        // если не 'read('
+        return false;
+    }
+
+    private bool ST(StreamReader sr)
+    {
+        int symbol;
+        string potentialOperator = "";
+        SpaceSkiper(sr);
+        LongRead(sr, 4, ref potentialOperator);
+        switch (potentialOperator)
+        {
+            case ("writ"):
+                return Write(sr);
+            case ("read"):
+                return Read(sr);
+            
+            default:
+                return false;
+        }
+    }
+    // <LISTST> -> <ST> | <LISTST> <ST>
+    // переделываем в:
+    // <ListST> -> <ST> <B>
+    // <B> -> Empty | <ST> <B>
+    private bool B(StreamReader sr)
+    {
+        SpaceSkiper(sr);
+        int symbol = sr.Peek();
+        if ((char)symbol == 'e' || (char)symbol == 'E')
+        {
+            string check = "";
+            LongRead(sr, 3, ref check);
+            if (check == "end")
+            {
+                return true;
+            }
+            // встретили слово начинающееся с e(E) но не end(END)
+            return false;
+        }
+        if (ST(sr))
+        {
+            return B(sr);
+        }
+        return false;
+    }
+    private bool ListSt(StreamReader sr)
+    {
+        if (!ST(sr))
+        {
+            return false;
+        }
+        return B(sr);
     }
 
     private string result_message = "Programm is correct";
