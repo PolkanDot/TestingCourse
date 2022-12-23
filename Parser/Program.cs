@@ -1,6 +1,4 @@
-﻿using System.Linq.Expressions;
-
-Parser parser = new Parser();
+﻿Parser parser = new Parser();
 parser.Parsing();
 class Parser
 {
@@ -282,9 +280,9 @@ class Parser
             if (IdList(sr, ")"))
             {
                 SpaceSkiper(sr);
-                if (LongRead(sr, 1, ref potentialOperator))
+                if ((LongRead(sr, 1, ref potentialOperator)) & (potentialOperator == ";"))
                 {
-                    return (potentialOperator == ";");
+                    return true;
                 }
                 result_message = "Ожидалось ;";
                 return false;
@@ -303,9 +301,9 @@ class Parser
             if (IdList(sr, ")"))
             {
                 SpaceSkiper(sr);
-                if (LongRead(sr, 1, ref potentialOperator))
+                if ((LongRead(sr, 1, ref potentialOperator)) & (potentialOperator == ";"))
                 {
-                    return (potentialOperator == ";");
+                    return true;
                 }
                 result_message = "Ожидалось ;";
                 return false;
@@ -325,9 +323,9 @@ class Parser
                 if (Exp(sr))
                 {
                     SpaceSkiper(sr);
-                    if (LongRead(sr, 1, ref potentialSign))
+                    if ((LongRead(sr, 1, ref potentialSign)) & (potentialSign == ";"))
                     {
-                        return (potentialSign == ";");
+                        return true;
                     }
                     result_message = "Ожидалось ;";
                     return false;
