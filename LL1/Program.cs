@@ -1,14 +1,4 @@
-﻿/*
-Седёлкина Анастасия
-Вдовкин Вадим
-Михеев Сергей
-Мифтахов Инсар
-ПС-33
- */
-
-using System.Runtime.CompilerServices;
-
-Parser parser = new Parser();
+﻿Parser parser = new Parser();
 parser.Start();
 class Parser
 {
@@ -79,14 +69,6 @@ class Parser
             }
             table.Add(tableString);
         }
-        for (int i = 0; i < table.Count; i++)
-        {
-            for (column = 0; column < table[i].Count; column++)
-            {
-                Console.Write(table[i][column] + " ");
-            }
-            Console.WriteLine();
-        }
     }
     public void Parsing()
     {
@@ -107,7 +89,6 @@ class Parser
     {
         return true;
     }
-
 
     private string result_message = "Programm is correct";
     private List<List<string>> table = new List<List<string>>();
