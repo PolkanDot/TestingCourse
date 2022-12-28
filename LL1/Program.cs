@@ -5,11 +5,37 @@ class Parser
     static void SpaceSkiper(StreamReader sr)
     {
         char space = (char)sr.Peek();
-        while (space == ' ')
+        while ((space == ' ') | (space == '\r') | (space == '\n'))
         {
             sr.Read();
             space = (char)sr.Peek();
         }
+    }
+    static bool LongRead(StreamReader sr, int count, ref string resultString)
+    {
+        int digit = 0;
+        char workChar;
+        char[] workString = new char[count];
+        bool result;
+
+        while ((digit < count) & (sr.Peek() != -1))
+        {
+            workChar = (char)sr.Read();
+            workString[digit] = workChar;
+            digit++;
+        }
+        if (digit == count)
+        {
+            resultString = string.Concat(workString);
+            resultString = resultString.ToLower();
+            result = true;
+        }
+        else
+        {
+            result = false;
+        }
+
+        return result;
     }
     public void Start()
     {
@@ -53,16 +79,88 @@ class Parser
             return;
         }
         using StreamReader sr = new(pathToInpFile);
-        bool result = Check(sr);
 
-        Console.WriteLine(result_message);
+        Check(sr);
     }
 
-    private bool Check(StreamReader sr)
+    private void Check(StreamReader sr)
     {
-        return true;
+        bool error = false;
+        bool end = false;
+        int currentLine = 0;
+        string[] mas = { };
+        SpaceSkiper(sr);
+        string currentChar = "";
+        LongRead(sr, 1, ref currentChar);
+        while ((!error) & (!end)) 
+        {
+            mas = (table[currentLine][1]).Split(",");
+            // Направляющее множество
+            if (Array.IndexOf(mas, currentChar) != -1)
+            {             
+                // Конечное состояние
+                if ((table[currentLine][6] == "да") & (stack.Count == 0))
+                {
+                    end = true;
+                }
+                else
+                {
+                    // Стек
+                    if (table[currentLine][4] != "нет")
+                    {
+                        stack.Push(Convert.ToInt32(table[currentLine][4]));
+                    }
+                    // Сдвиг по фазе
+                    if (table[currentLine][2] == "да")
+                    {
+                        SpaceSkiper(sr);
+                        if (!LongRead(sr, 1, ref currentChar))
+                        {
+                            currentChar = "/n";
+                        }
+                    }
+                    // Переход
+                    if (table[currentLine][3] != "-")
+                    {
+                        currentLine = Convert.ToInt32(table[currentLine][3]);
+                    }
+                    else if (stack.Count != 0)
+                    {
+                        currentLine = stack.Pop();
+                        SpaceSkiper(sr);
+                        if ((!LongRead(sr, 1, ref currentChar)) & (currentChar != "/n"))
+                        {
+                            currentChar = "/n";
+                        }
+                        else if (currentChar == "/n")
+                        {
+                            error= true;
+                            result_message = $"Ошибка в строке {currentLine}, ожидалось {table[currentLine][1]}";
+                        }
+                    }
+                    else
+                    {
+                        end = true;
+                    }
+                }           
+            }
+            else
+            {
+                // Ошибка
+                if (table[currentLine][5] == "да")
+                {
+                    error = true;
+                    result_message = $"Ошибка в строке {currentLine}, ожидалось {table[currentLine][1]}";
+                }
+                else
+                {
+                    currentLine++;
+                }
+            }
+        }
     }
 
-    private string result_message = "Programm is correct";
+    private string result_message = "Expression is correct";
     private List<List<string>> table = new List<List<string>>();
+    private Stack<int> stack = new Stack<int>();
 }
