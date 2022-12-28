@@ -1,4 +1,11 @@
-﻿Parser parser = new Parser();
+﻿/*
+ * ПС-33
+ * Мифтахов Инсар
+ * Михеев Сергей
+ * Вдовкин Вадим
+ */
+
+Parser parser = new Parser();
 parser.Start();
 class Parser
 {
