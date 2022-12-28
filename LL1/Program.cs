@@ -5,38 +5,11 @@ class Parser
     static void SpaceSkiper(StreamReader sr)
     {
         char space = (char)sr.Peek();
-        while ((space == ' ') | (space == '\r') | (space == '\n'))
+        while (space == ' ')
         {
             sr.Read();
             space = (char)sr.Peek();
         }
-    }
-
-    static bool LongRead(StreamReader sr, int count, ref string resultString)
-    {
-        int digit = 0;
-        char workChar;
-        char[] workString = new char[count];
-        bool result;
-
-        while ((digit < count) & (sr.Peek() != -1))
-        {
-            workChar = (char)sr.Read();
-            workString[digit] = workChar;
-            digit++;
-        }
-        if (digit == count)
-        {
-            resultString = string.Concat(workString);
-            resultString = resultString.ToLower();
-            result = true;
-        }
-        else
-        {
-            result = false;
-        }
-
-        return result;
     }
     public void Start()
     {
