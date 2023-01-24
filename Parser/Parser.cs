@@ -46,6 +46,7 @@ class Parser
 
         return result;
     }
+    
     public void Parsing()
     {
         Console.WriteLine("Укажите полный путь к проверяемому файлу с кодом:");
@@ -114,7 +115,7 @@ class Parser
 
         return result;
     }
-
+    
     private bool Var(StreamReader sr)
     {
         int readResult;
@@ -364,7 +365,7 @@ class Parser
                         SpaceSkiper(sr);
                         return Write(sr);
                     }
-                    result_message = "Ожидался оператор";
+                    result_message = "Ожидался оператор write";
                     return false;
                 }
             case ("re"):
@@ -374,7 +375,7 @@ class Parser
                         SpaceSkiper(sr);
                         return Read(sr);
                     }
-                    result_message = "Ожидался оператор";
+                    result_message = "Ожидался оператор read";
                     return false;
                 }
             case ("id"):

@@ -47,7 +47,7 @@ class Parser
     public void Start()
     {
         Console.WriteLine("Укажите полный путь к файлу с таблицей LL1:");
-        string? pathToInpFile = Console.ReadLine();
+        string? pathToInpFile = "C:/Study/Testing/LL1/info.txt";
         if (!File.Exists(pathToInpFile))
         {
             Console.WriteLine("Ошибка открытия файла");
@@ -79,7 +79,7 @@ class Parser
     public void Parsing()
     {
         Console.WriteLine("Укажите полный путь к проверяемому файлу с кодом:");
-        string? pathToInpFile = Console.ReadLine();
+        string? pathToInpFile = "C:/Study/Testing/LL1/input.txt";
         if (!File.Exists(pathToInpFile))
         {
             Console.WriteLine("Ошибка открытия файла");
